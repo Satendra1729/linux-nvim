@@ -1116,6 +1116,17 @@ require('lazy').setup({
   },
 })
 
+vim.keymap.set('n', '<leader>q', ':qa!<CR>')
+-- Increase window height
+vim.keymap.set('n', '<C-Up>', ':resize +2<CR>')
+-- Decrease window height
+vim.keymap.set('n', '<C-Down>', ':resize -2<CR>')
+
+-- Increase window width
+vim.keymap.set('n', '<C-Right>', ':vertical resize +2<CR>')
+-- Decrease window width
+vim.keymap.set('n', '<C-Left>', ':vertical resize -2<CR>')
+
 vim.keymap.set('n', '<leader>n', ':NvimTreeToggle<CR>', { noremap = true, silent = true, desc = 'Toggle NvimTree' })
 vim.opt.guifont = 'Fira Code:h12'
 
