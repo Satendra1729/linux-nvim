@@ -256,7 +256,84 @@ rtp:prepend(lazypath)
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
   -- NOTE: Plugins can be added via a link or github org/name. To run setup automatically, use `opts = {}`
+  -- to make it work install gdb and lldb using using apt-get
+  -- open folder where CMakeLists.txt lives
+  -- run : CmakeGenerate
+  -- run : CMakeSelectLaunchTarget
+  -- run : CmakeDebug
+  {
+    'mfussenegger/nvim-dap',
+    dependencies = {
+      'rcarriga/nvim-dap-ui',
+      'nvim-neotest/nvim-nio',
+    },
+    config = function()
+      local dap = require 'dap'
+      local dapui = require 'dapui'
 
+      dapui.setup()
+
+      -- Automatically open/close the debugging windows
+      dap.listeners.before.attach.dapui_config = function() dapui.open() end
+      dap.listeners.before.launch.dapui_config = function() dapui.open() end
+      dap.listeners.before.event_terminated.dapui_config = function() dapui.close() end
+      dap.listeners.before.event_exited.dapui_config = function() dapui.close() end
+
+      -- Map the debugger engine to your system's LLDB
+      dap.adapters.lldb = {
+        type = 'executable',
+        command = 'gdb', -- Change to 'gdb' if you prefer GDB on Linux
+        args = { '--interpreter=dap', '--eval-command=set print pretty on' },
+        name = 'lldb',
+      }
+
+      -- Global Debugging Keymaps
+      vim.keymap.set('n', '<F5>', function() dap.continue() end, { desc = 'Debug: Start/Continue' })
+      vim.keymap.set('n', '<F10>', function() dap.step_over() end, { desc = 'Debug: Step Over' })
+      vim.keymap.set('n', '<F11>', function() dap.step_into() end, { desc = 'Debug: Step Into' })
+      vim.keymap.set('n', '<F12>', function() dap.step_out() end, { desc = 'Debug: Step Out' })
+      vim.keymap.set('n', '<leader>b', function() dap.toggle_breakpoint() end, { desc = 'Debug: Toggle Breakpoint' })
+    end,
+  },
+
+  -- CMake Native Integration
+  {
+    'Civitasv/cmake-tools.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    config = function()
+      require('cmake-tools').setup {
+        cmake_build_directory = 'build',
+        cmake_generate_options = { '-DCMAKE_BUILD_TYPE=Debug' }, -- Generates essential debug flags (-g)
+        cmake_dap_configuration = {
+          name = 'CMake Debug Target',
+          type = 'lldb', -- Links directly to the dap.adapters.lldb definition above
+          request = 'launch',
+          stopOnEntry = false,
+          runInTerminal = true,
+        },
+      }
+    end,
+  },
+  -- integrate the asm_lsp nvim
+  {
+    'neovim/nvim-lspconfig',
+    opts = {
+      servers = {
+        asm_lsp = {
+          cmd = { 'asm-lsp' },
+          filetypes = { 'asm', 'S', 's' },
+          single_file_support = true,
+        },
+      },
+    },
+  },
+  -- using Mason it insures the asm_lsp is intalled
+  {
+    'williamboman/mason-lspconfig.nvim',
+    opts = {
+      ensure_installed = { 'asm_lsp' },
+    },
+  },
   {
     'gennaro-tedesco/nvim-jqx',
     event = { 'BufReadPost' },
