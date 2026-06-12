@@ -1116,6 +1116,44 @@ require('lazy').setup({
   },
 })
 
+-- Toggle floating window for current buffer
+local float_win = nil
+local prev_win = nil
+
+function ToggleFloat()
+  local buf = vim.api.nvim_get_current_buf()
+
+  -- If floating window is already open, close it and return to previous window
+  if float_win ~= nil and vim.api.nvim_win_is_valid(float_win) then
+    vim.api.nvim_win_close(float_win, true)
+    float_win = nil
+    if prev_win ~= nil and vim.api.nvim_win_is_valid(prev_win) then vim.api.nvim_set_current_win(prev_win) end
+    return
+  end
+
+  -- Save current window to fall back later
+  prev_win = vim.api.nvim_get_current_win()
+
+  -- Create floating window
+  local width = math.floor(vim.o.columns)
+  local height = math.floor(vim.o.lines - 4)
+  local row = math.floor((vim.o.lines - height) / 2)
+  local col = math.floor((vim.o.columns - width) / 2)
+
+  float_win = vim.api.nvim_open_win(buf, true, {
+    relative = 'editor',
+    width = width,
+    height = height,
+    row = row,
+    col = col,
+    style = 'minimal',
+    border = 'rounded',
+  })
+end
+
+-- Keymap to toggle floating window
+vim.keymap.set('n', '<leader>f', ToggleFloat, { desc = 'Toggle floating window' })
+
 vim.keymap.set('n', '<leader>q', ':qa!<CR>')
 -- Increase window height
 vim.keymap.set('n', '<C-Up>', ':resize +2<CR>')
