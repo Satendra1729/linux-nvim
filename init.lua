@@ -778,9 +778,9 @@ require('lazy').setup({
       --  See `:help lsp-config` for information about keys and how to configure
       local servers = {
         clangd = {
-          cmd = { 'clangd', '--compile-commands-dir=/media/kushsat/My1T/code/git/lab/cpp/poesía/build' },
+          cmd = { 'clangd' }, -- '--compile-commands-dir=/media/kushsat/My1T/code/git/lab/build' },
           filetypes = { 'c', 'cpp', 'objc', 'objcpp' },
-          root_dir = vim.fs.root(0, { 'compile_commands.json', '.git' }),
+          -- root_dir = vim.fs.root(0, { 'compile_comman.json', '.gi' }),
         },
         -- gopls = {},
         pyright = {},
