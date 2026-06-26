@@ -1200,6 +1200,7 @@ vim.api.nvim_create_autocmd('FileType', {
 })
 
 -- Keymaps for LSP features
+vim.keymap.set('n', '<leader>tcl', '<cmd>bd<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', 'K', vim.lsp.buf.hover, { desc = 'Hover Documentation' })
 vim.keymap.set('n', 'gd', vim.lsp.buf.definition, { desc = 'Go to Definition' })
 vim.keymap.set('n', 'gr', vim.lsp.buf.references, { desc = 'Go to References' })
