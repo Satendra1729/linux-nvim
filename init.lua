@@ -230,6 +230,33 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   callback = function() vim.hl.on_yank() end,
 })
 
+-- Create an augroup to prevent duplicate autocmds when reloading config
+local cmake_group = vim.api.nvim_create_augroup('CMakeAutoRun', { clear = true })
+
+vim.api.nvim_create_autocmd({ 'BufWritePost' }, {
+  group = cmake_group,
+  -- Match cpp, hpp, c, h, CMakeLists.txt, and any .cmake files
+  pattern = { '*.cpp', '*.hpp', '*.c', '*.h', 'CMakeLists.txt', '*.cmake' },
+  callback = function()
+    -- Notify the user that the build started
+    vim.notify 'Changes detected. Running CMake...'
+
+    -- Run cmake in the background non-blocking style
+    -- Adjust "build" to your specific build directory name
+    vim.fn.jobstart({ 'cmake', '--build', 'build' }, {
+      stdout_buffered = true,
+      stderr_buffered = true,
+      on_exit = function(_, exit_code, _)
+        if exit_code == 0 then
+          vim.notify 'CMake build successful!'
+        else
+          vim.notify 'CMake build failed. Check logs.'
+        end
+      end,
+    })
+  end,
+})
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -778,7 +805,15 @@ require('lazy').setup({
       --  See `:help lsp-config` for information about keys and how to configure
       local servers = {
         clangd = {
-          cmd = { 'clangd' }, -- '--compile-commands-dir=/media/kushsat/My1T/code/git/lab/build' },
+          cmd = {
+            'clangd',
+            '--background-index',
+            '--clang-tidy',
+            '--header-insertion=iwyu',
+            '--completion-style=detailed',
+            '--function-arg-placeholders',
+            '--fallback-style=llvm',
+          }, --  { 'clangd' }, -- '--compile-commands-dir=/media/kushsat/My1T/code/git/lab/build' },
           filetypes = { 'c', 'cpp', 'objc', 'objcpp' },
           -- root_dir = vim.fs.root(0, { 'compile_comman.json', '.gi' }),
         },
