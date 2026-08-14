@@ -232,25 +232,31 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 
 -- Create an augroup to prevent duplicate autocmds when reloading config
 local cmake_group = vim.api.nvim_create_augroup('CMakeAutoRun', { clear = true })
-
+local cmake_job_id = nil
 vim.api.nvim_create_autocmd({ 'BufWritePost' }, {
   group = cmake_group,
   -- Match cpp, hpp, c, h, CMakeLists.txt, and any .cmake files
   pattern = { '*.cpp', '*.hpp', '*.c', '*.h', 'CMakeLists.txt', '*.cmake' },
   callback = function()
     -- Notify the user that the build started
-    vim.notify 'Changes detected. Running CMake...'
+    local notification_msg = 'Change detected, Running cmake'
+    if cmake_job_id ~= nil then
+      notification_msg = 'Cancelled job <' .. cmake_job_id .. '> Rerunning cmake'
+      vim.fn.jobstop(cmake_job_id)
+      cmake_job_id = nil
+    end
+    vim.notify(notification_msg)
 
     -- Run cmake in the background non-blocking style
     -- Adjust "build" to your specific build directory name
-    vim.fn.jobstart({ 'cmake', '--build', 'build' }, {
+    cmake_job_id = vim.fn.jobstart({ 'cmake', '--build', 'build' }, {
       stdout_buffered = true,
       stderr_buffered = true,
       on_exit = function(_, exit_code, _)
         if exit_code == 0 then
           vim.notify 'CMake build successful!'
         else
-          vim.notify 'CMake build failed. Check logs.'
+          vim.notify('CMake build failed with exit_code <' .. exit_code .. '> Check logs.')
         end
       end,
     })
