@@ -1259,7 +1259,14 @@ vim.api.nvim_create_autocmd('FileType', {
     vim.opt_local.spelllang = { 'en_us' }
   end,
 })
+-- Force Neovim to use Tree-sitter queries for folding mechanics
+vim.opt.foldmethod = 'expr'
+vim.opt.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
 
+-- Keep folds open when you first load a file
+vim.opt.foldlevel = 99
+vim.opt.foldlevelstart = 99
+vim.opt.foldenable = true
 -- vim.g.OmniSharp_server_use_net6 = 1
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
