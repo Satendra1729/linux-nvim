@@ -389,7 +389,7 @@ require('lazy').setup({
           border = 'curved',
         },
       }
-      vim.keymap.set('n', '<Space>ter', '<cmd>ToggleTerm<CR>', { noremap = true, silent = true })
+      vim.keymap.set('n', '<leader>ter', '<cmd>ToggleTerm<CR>', { noremap = true, silent = true })
 
       -- Function to close Toggleterm or forward Escape
       function _G.smart_esc()
@@ -1193,7 +1193,7 @@ function ToggleFloat()
 end
 
 -- Keymap to toggle floating window
-vim.keymap.set('n', '<leader>f', ToggleFloat, { desc = 'Toggle floating window' })
+vim.keymap.set('n', '<leader>t', ToggleFloat, { desc = 'Toggle floating window' })
 
 vim.keymap.set('n', '<leader>q', ':qa!<CR>')
 -- Increase window height
@@ -1239,7 +1239,21 @@ vim.api.nvim_create_autocmd('FileType', {
     }
   end,
 })
+local fold_group = vim.api.nvim_create_augroup('AutoSaveFolds', { clear = true })
 
+-- Save fold state when leaving a buffer
+vim.api.nvim_create_autocmd({ 'BufWinLeave', 'BufLeave' }, {
+  group = fold_group,
+  pattern = '*',
+  command = 'silent! mkview',
+})
+
+-- Restore fold state when entering a buffer
+vim.api.nvim_create_autocmd({ 'BufWinEnter' }, {
+  group = fold_group,
+  pattern = '*',
+  command = 'silent! loadview',
+})
 -- Keymaps for LSP features
 vim.keymap.set('n', '<leader>tcl', '<cmd>bd<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', 'K', vim.lsp.buf.hover, { desc = 'Hover Documentation' })
